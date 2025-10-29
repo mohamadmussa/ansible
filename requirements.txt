@@ -6,3 +6,6 @@ hcloud
 
 # Benötigt von der community.docker Collection
 docker
+
+## Für statische Analyse und Best Practices
+ansible-lint==6.22.1

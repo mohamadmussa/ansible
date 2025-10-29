@@ -1,14 +1,14 @@
 # ===================================================================
-# FINALES, FUNKTIONIERENDES DOCKERFILE FÜR ANSIBLE
+# FINALES, FUNKTIONIERENDES DOCKERFILE FÜR ANSIBLE + LINTING
 # Single-Stage-Build mit Python-Abhängigkeiten für Collections
 # ===================================================================
 
 # Wir starten mit einem Python-fähigen Alpine-Image und bleiben dabei.
-FROM python:3.11-alpine3.19
+FROM python:3.11-alpine3.21
 
 LABEL org.opencontainers.image.authors="Mohamad Mussa" \
       org.opencontainers.image.title="Ansible CI Image" \
-      org.opencontainers.image.description="Funktionierendes Alpine-Image mit Ansible 2.19.3 und Collections."
+      org.opencontainers.image.description="Funktionierendes Alpine-Image mit Ansible 2.19.3, Collections und ansible-lint."
 
 ARG ANSIBLE_VERSION="2.19.3"
 
@@ -25,11 +25,9 @@ RUN apk add --no-cache --virtual .build-deps \
     && pip install --no-cache-dir "ansible-core==${ANSIBLE_VERSION}" \
     && apk del .build-deps
 
-# --- NEUER SCHRITT: PYTHON-ABHÄNGIGKEITEN FÜR COLLECTIONS INSTALLIEREN ---
 # Kopiere die requirements.txt und installiere die Pakete mit pip
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-# ----------------------------------------------------------------------
 
 # Kopiere die requirements.yml und installiere die Ansible Collections
 COPY requirements.yml .
