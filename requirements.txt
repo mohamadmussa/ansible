@@ -1,11 +1,14 @@
 # requirements.txt
-# Python-Abhängigkeiten für Ansible Collections
+# Python-Abhängigkeiten für Ansible, Collections und Linting
+
+# Vollständiges Ansible-Paket (inkl. CLI und YAML-Parser)
+ansible-core==2.19.3
+
+# Für statische Analyse und Best Practices
+ansible-lint==25.9.2
 
 # Benötigt von der hetzner.hcloud Collection
 hcloud
 
 # Benötigt von der community.docker Collection
 docker
-
-## Für statische Analyse und Best Practices
-ansible-lint==6.22.1

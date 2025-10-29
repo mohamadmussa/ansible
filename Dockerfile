@@ -10,7 +10,6 @@ LABEL org.opencontainers.image.authors="Mohamad Mussa" \
       org.opencontainers.image.title="Ansible CI Image" \
       org.opencontainers.image.description="Funktionierendes Alpine-Image mit Ansible 2.19.3, Collections und ansible-lint."
 
-ARG ANSIBLE_VERSION="2.19.3"
 
 # Installiere Build-Tools, dann Ansible, dann entferne die Build-Tools
 RUN apk add --no-cache --virtual .build-deps \
@@ -22,7 +21,6 @@ RUN apk add --no-cache --virtual .build-deps \
     sshpass \
     openssh-client \
     && pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir "ansible-core==${ANSIBLE_VERSION}" \
     && apk del .build-deps
 
 # Kopiere die requirements.txt und installiere die Pakete mit pip
