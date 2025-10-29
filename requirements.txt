@@ -1,0 +1,8 @@
+# requirements.txt
+# Python-Abhängigkeiten für Ansible Collections
+
+# Benötigt von der hetzner.hcloud Collection
+hcloud
+
+# Benötigt von der community.docker Collection
+docker

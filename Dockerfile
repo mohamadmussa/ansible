@@ -1,40 +1,42 @@
-# Dockerfile für ansible mit ENTRYPOINT
+# ===================================================================
+# FINALES, FUNKTIONIERENDES DOCKERFILE FÜR ANSIBLE
+# Single-Stage-Build mit Python-Abhängigkeiten für Collections
+# ===================================================================
 
-# ... (Stufe 1 'builder' bleibt unverändert) ...
-# =============================================
-# Stufe 1: Build-Umgebung (builder)
-# =============================================
-FROM python:3.11-alpine AS builder
-WORKDIR /app
-ARG ANSIBLE_VERSION="2.19.3"
-RUN apk add --no-cache build-base libffi-dev openssl-dev cargo sshpass openssh-client
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir "ansible-core==${ANSIBLE_VERSION}"
-COPY requirements.yml .
-RUN ansible-galaxy collection install -r requirements.yml -p /opt/venv/lib/python3.11/site-packages/ansible_collections
-
-# =============================================
-# Stufe 2: Finales, schlankes Image
-# =============================================
-FROM alpine:3.19
+# Wir starten mit einem Python-fähigen Alpine-Image und bleiben dabei.
+FROM python:3.11-alpine3.19
 
 LABEL org.opencontainers.image.authors="Mohamad Mussa" \
-      org.opencontainers.image.title="Ansible CI Image"
+      org.opencontainers.image.title="Ansible CI Image" \
+      org.opencontainers.image.description="Funktionierendes Alpine-Image mit Ansible 2.19.3 und Collections."
 
-RUN apk add --no-cache python3 sshpass openssh-client
+ARG ANSIBLE_VERSION="2.19.3"
 
-COPY --from=builder /opt/venv /opt/venv
+# Installiere Build-Tools, dann Ansible, dann entferne die Build-Tools
+RUN apk add --no-cache --virtual .build-deps \
+    build-base \
+    libffi-dev \
+    openssl-dev \
+    cargo \
+    && apk add --no-cache \
+    sshpass \
+    openssh-client \
+    && pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir "ansible-core==${ANSIBLE_VERSION}" \
+    && apk del .build-deps
 
-# --- NEUE SCHRITTE ---
-# Kopiere das Entrypoint-Skript in das Image
-COPY docker-entrypoint.sh /usr/local/bin/
-# Setze das Entrypoint-Skript
-ENTRYPOINT ["docker-entrypoint.sh"]
-# --------------------
+# --- NEUER SCHRITT: PYTHON-ABHÄNGIGKEITEN FÜR COLLECTIONS INSTALLIEREN ---
+# Kopiere die requirements.txt und installiere die Pakete mit pip
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+# ----------------------------------------------------------------------
 
+# Kopiere die requirements.yml und installiere die Ansible Collections
+COPY requirements.yml .
+RUN ansible-galaxy collection install -r requirements.yml
+
+# Setze das Arbeitsverzeichnis
 WORKDIR /ansible
 
-# Der CMD wird jetzt an den ENTRYPOINT übergeben
+# Standardbefehl zum Testen
 CMD ["ansible", "--version"]
