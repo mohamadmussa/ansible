@@ -1,17 +1,16 @@
 # ===================================================================
-# FINALES, FUNKTIONIERENDES DOCKERFILE FÜR ANSIBLE + LINTING
+# FUNKTIONIERENDES DOCKERFILE FÜR ANSIBLE + LINTING
 # Single-Stage-Build mit Python-Abhängigkeiten für Collections
 # ===================================================================
 
 # Wir starten mit einem Python-fähigen Alpine-Image und bleiben dabei.
-FROM python:3.11-alpine3.21
+FROM python:3.11-alpine3.22
 
 LABEL org.opencontainers.image.authors="Mohamad Mussa" \
       org.opencontainers.image.title="Ansible CI Image" \
-      org.opencontainers.image.description="Funktionierendes Alpine-Image mit Ansible 2.19.3, Collections und ansible-lint."
+      org.opencontainers.image.description="Funktionierendes Alpine-Image mit Ansible, Collections, ansible-lint und Docker-CLI."
 
-
-# Installiere Build-Tools, dann Ansible, dann entferne die Build-Tools
+# Installiere zuerst alle System-Abhängigkeiten in einem Schritt.
 RUN apk add --no-cache --virtual .build-deps \
     build-base \
     libffi-dev \
@@ -20,12 +19,14 @@ RUN apk add --no-cache --virtual .build-deps \
     && apk add --no-cache \
     sshpass \
     openssh-client \
-    && pip install --no-cache-dir --upgrade pip \
-    && apk del .build-deps
+    docker-cli \
+    docker-compose
 
-# Kopiere die requirements.txt und installiere die Pakete mit pip
+# Installiere alle Python-Pakete in einem einzigen RUN-Befehl, um die Anzahl der Layer zu reduzieren.
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apk del .build-deps \
+    && pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
 # Kopiere die requirements.yml und installiere die Ansible Collections
 COPY requirements.yml .
