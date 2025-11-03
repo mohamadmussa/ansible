@@ -20,17 +20,20 @@ RUN apk add --no-cache --virtual .build-deps \
     sshpass \
     openssh-client \
     docker-cli \
-    docker-compose
+    docker-compose \
+    wireguard-tools
 
 # Installiere alle Python-Pakete in einem einzigen RUN-Befehl, um die Anzahl der Layer zu reduzieren.
 COPY requirements.txt .
-RUN apk del .build-deps \
-    && pip install --no-cache-dir --upgrade pip \
+RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 # Kopiere die requirements.yml und installiere die Ansible Collections
 COPY requirements.yml .
 RUN ansible-galaxy collection install -r requirements.yml
+
+# Bereinige die Build-Abhängigkeiten in einem separaten, letzten Schritt.
+RUN apk del .build-deps
 
 # Setze das Arbeitsverzeichnis
 WORKDIR /ansible
