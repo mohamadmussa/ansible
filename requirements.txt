@@ -15,3 +15,6 @@ docker
 
 # Benötigt für die Interaktion mit GitLab-APIs
 python-gitlab
+
+# JSON Parsing Bibliothek, benötigt von einigen Ansible Modulen
+jmespath
